@@ -14,7 +14,7 @@ export function defaultDesign(): Design {
     jointMethod: 'blind',
     jointOptions: recommendedJointOptions(getProfile(profileId)),
     stock: { length: 1000, kerf: 2.5, trim: 5 },
-    panels: { faces: [], thickness: 3, material: 'acrylic', clearance: 0.5 },
+    panels: { faces: [], thickness: 3.2, material: 'acrylic', clearance: 0.5 },
     hardwareSpares: 10,
   }
 }

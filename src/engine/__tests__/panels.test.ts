@@ -17,7 +17,7 @@ describe('panel sizing', () => {
     // 500 − 2×20 + 2 × (6.1 − 0.5) = 471.2; 300 − 40 + 11.2 = 271.2
     expect(p.width).toBeCloseTo(471.2)
     expect(p.height).toBeCloseTo(271.2)
-    expect(p.thickness).toBe(3)
+    expect(p.thickness).toBe(3.2)
   })
 
   it('groups identical sheets across opposite faces', () => {
