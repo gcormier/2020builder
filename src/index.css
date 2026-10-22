@@ -136,13 +136,14 @@ select:focus {
 }
 
 .input-wrap input {
-  padding-right: 32px;
+  padding: 6px 24px 6px 6px;
   font-family: var(--mono);
+  font-size: 13px;
 }
 
 .suffix {
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 11px;

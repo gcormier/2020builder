@@ -143,21 +143,21 @@ export function OutputTabs({ build, hover, setHover }: Props) {
                   {build.design.stock.trim > 0 && (
                     <span className="seg trim" style={{ flexBasis: `${(build.design.stock.trim / n.stockLength) * 100}%` }} />
                   )}
-                  {bar.cuts.map((c, j) => (
-                    <span
-                      key={j}
-                      className={`seg ${hover === c.group ? 'hot' : ''}`}
-                      title={`${c.group}: ${fmt(c.length)}`}
-                      style={{
-                        flexBasis: `${((c.length + build.design.stock.kerf) / n.stockLength) * 100}%`,
-                        background: colorOf.get(c.group),
-                      }}
-                      onMouseEnter={() => setHover(c.group)}
-                      onMouseLeave={() => setHover(null)}
-                    >
-                      {c.group} {fmt(c.length)}
-                    </span>
-                  ))}
+                  {bar.cuts.map((c, j) => {
+                    const pct = ((c.length + build.design.stock.kerf) / n.stockLength) * 100
+                    return (
+                      <span
+                        key={j}
+                        className={`seg ${hover === c.group ? 'hot' : ''}`}
+                        title={`${c.group}: ${fmt(c.length)}`}
+                        style={{ flexBasis: `${pct}%`, background: colorOf.get(c.group) }}
+                        onMouseEnter={() => setHover(c.group)}
+                        onMouseLeave={() => setHover(null)}
+                      >
+                        {pct < 9 ? c.group : `${c.group} ${fmt(c.length)}`}
+                      </span>
+                    )
+                  })}
                   <span className="seg rest">{fmt(bar.remaining)}</span>
                 </div>
               </div>
