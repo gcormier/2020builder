@@ -95,20 +95,25 @@ export function CutListTable({ build, hover, setHover }: { build: Build } & Hove
 }
 
 export function HardwareTable({ build }: { build: Build }) {
+  const spares = build.design.hardwareSpares
   return (
     <table>
       <thead>
         <tr>
           <th className="num">Qty</th>
+          {spares > 0 && <th className="num">Buy (+{spares}%)</th>}
           <th>Hardware</th>
         </tr>
       </thead>
       <tbody>
         {build.hardware.map((h) => (
           <tr key={h.key}>
-            <td className="num">
-              <b>{h.qty}</b>
-            </td>
+            <td className="num">{h.qty}</td>
+            {spares > 0 && (
+              <td className="num">
+                <b>{h.buy}</b>
+              </td>
+            )}
             <td>{h.description}</td>
           </tr>
         ))}

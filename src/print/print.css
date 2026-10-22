@@ -294,4 +294,8 @@
   tr {
     break-inside: avoid;
   }
+  /* The printable width is under the app's 900px mobile breakpoint; keep side-by-side blocks. */
+  .sheet .cols {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
 }

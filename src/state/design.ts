@@ -42,6 +42,7 @@ export function decodeDesign(json: string): Design | null {
       },
       stock: { ...def.stock, ...p.stock },
       panels: { ...def.panels, ...p.panels },
+      hardwareSpares: typeof p.hardwareSpares === 'number' ? p.hardwareSpares : def.hardwareSpares,
     }
   } catch {
     return null

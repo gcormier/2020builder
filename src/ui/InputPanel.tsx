@@ -14,6 +14,8 @@ import {
   type Sizing,
   type Units,
 } from '../engine'
+import { decodeDesign } from '../state/design'
+import { saveCsv, saveDesignJson } from './exports'
 import { JointOptionsPanel } from './JointOptionsPanel'
 import { OWNER_LABELS } from './labels'
 import { NumberField } from './NumberField'
@@ -86,6 +88,28 @@ export function InputPanel({ design, build, update }: Props) {
           onChange={(units) => update((d) => ({ ...d, units }))}
         />
       </header>
+
+      <div className="file-actions">
+        <button onClick={() => saveDesignJson(design)}>Save design</button>
+        <label className="file-btn">
+          Open…
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              const d = decodeDesign(await file.text())
+              if (d) update(() => d)
+              else alert('That file is not a 2020 Builder design.')
+            }}
+          />
+        </label>
+        <button onClick={() => saveCsv(build)} disabled={build.errors.length > 0}>
+          Export CSV
+        </button>
+      </div>
 
       <section>
         <label className="field">
@@ -218,11 +242,20 @@ export function InputPanel({ design, build, update }: Props) {
       </section>
 
       <section>
-        <h2>Stock</h2>
+        <h2>Stock &amp; hardware</h2>
         <div className="grid3">
           <NumberField label="Bar length" value={design.stock.length} units={u} onChange={(length) => setStock({ length })} />
           <NumberField label="Kerf" value={design.stock.kerf} units={u} step={u === 'in' ? 0.01 : 0.1} onChange={(kerf) => setStock({ kerf })} />
           <NumberField label="End trim" value={design.stock.trim} units={u} onChange={(trim) => setStock({ trim })} />
+        </div>
+        <div className="grid3">
+          <NumberField
+            label="Hardware spares"
+            value={design.hardwareSpares}
+            suffix="%"
+            step={5}
+            onChange={(hardwareSpares) => update((d) => ({ ...d, hardwareSpares }))}
+          />
         </div>
       </section>
     </aside>

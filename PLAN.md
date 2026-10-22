@@ -163,7 +163,7 @@ Also: CSV export of cut list + BOM, JSON design export.
 
 ## 7. Phases
 
-**Status:** Phases 0–2 done for the blind-joint method (engine + tests, 3D preview, input panel, cut list / hardware / stock / assembly tabs, URL-hash sharing). Pages CI in place. Next: Phase 4 print plan, then Phase 6 panels; other joint methods (Phase 3) as needed.
+**Status (2026-10-22):** Phases 0–6 done — engine + 98 tests; 3D preview; all five joint methods (blind, L-bracket, through-bolt, 3-way cube, hidden connector); printable plan (overview, dimensioned views, QR, cut list, panels, stock, hardware w/ spares, machining diagrams, assembly); slot-inserted panels with hardware-aware corner notches; JSON save/open, CSV export; IXGNIJ M6 profile as default. Deployed to GitHub Pages. Remaining v2 ideas below.
 
 | # | Deliverable | Done when |
 |---|---|---|

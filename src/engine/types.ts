@@ -111,6 +111,8 @@ export interface Design {
   jointOptions: JointOptions
   stock: StockOptions
   panels: PanelOptions
+  /** Extra hardware to buy, percent (rounded up per line). */
+  hardwareSpares: number
 }
 
 export interface TapPrep {
@@ -191,6 +193,8 @@ export interface HardwareLine {
   category: 'fastener' | 'connector' | 'nut'
   description: string
   qty: number
+  /** qty plus spares, filled in by the build. */
+  buy?: number
 }
 
 export type MemberOp =

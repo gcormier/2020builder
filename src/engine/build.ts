@@ -105,7 +105,7 @@ export function buildFrame(design: Design): Build {
     nodes,
     joints: result.joints,
     groups,
-    hardware: result.hardware,
+    hardware: result.hardware.map((h) => ({ ...h, buy: Math.ceil(h.qty * (1 + Math.max(0, design.hardwareSpares || 0) / 100)) })),
     tools: result.tools,
     steps: withPanelStep(method.steps(frame, groups), panels.groups, design),
     notes: [...result.notes, ...panels.notes],

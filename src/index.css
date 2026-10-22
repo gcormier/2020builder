@@ -191,6 +191,33 @@ select:focus {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
+.file-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.file-actions button,
+.file-btn {
+  font: inherit;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.file-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.file-btn input {
+  display: none;
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -496,7 +523,34 @@ tr.hot td {
   }
 }
 
-.panel select + .chips {
+.panel select + .file-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.file-actions button,
+.file-btn {
+  font: inherit;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.file-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.file-btn input {
+  display: none;
+}
+
+.chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
