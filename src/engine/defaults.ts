@@ -3,7 +3,7 @@ import { getProfile } from './profiles'
 import type { Design } from './types'
 
 export function defaultDesign(): Design {
-  const profileId = '2020-t6'
+  const profileId = '2020-ixgnij-m6'
   return {
     version: 1,
     name: 'Untitled frame',

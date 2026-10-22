@@ -7,9 +7,28 @@ import { getProfile } from '../profiles'
 import { formatLength, fromDisplay } from '../units'
 import type { Axis, Build, CutGroup, Design } from '../types'
 
+/** Most tests pin the generic M5 profile so their geometry doesn't move with the app default. */
 function design(patch: Partial<Design> = {}): Design {
-  return { ...defaultDesign(), ...patch }
+  const m5 = getProfile('2020-t6')
+  return {
+    ...defaultDesign(),
+    profileId: m5.id,
+    jointOptions: { blind: recommendedBlindOptions(m5) },
+    ...patch,
+  }
 }
+
+describe('default design', () => {
+  it('uses the IXGNIJ M6 profile with matching screw options and no warnings', () => {
+    const d = defaultDesign()
+    expect(d.profileId).toBe('2020-ixgnij-m6')
+    expect(d.jointOptions.blind).toEqual(recommendedBlindOptions(getProfile('2020-ixgnij-m6')))
+    const b = buildFrame(d)
+    expect(b.errors).toEqual([])
+    expect(b.warnings).toEqual([])
+    expect(b.hardware[0].key).toBe('M6x12-BHCS')
+  })
+})
 
 const lengthsByAxis = (b: Build, axis: Axis) =>
   [...new Set(b.members.filter((m) => m.axis === axis).map((m) => m.length))]
