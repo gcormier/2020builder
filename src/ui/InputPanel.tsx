@@ -11,6 +11,7 @@ import {
   type Sizing,
   type Units,
 } from '../engine'
+import { OWNER_LABELS } from './labels'
 import { NumberField } from './NumberField'
 
 interface Props {
@@ -19,11 +20,6 @@ interface Props {
   update: (fn: (d: Design) => Design) => void
 }
 
-const OWNER_LABELS: Record<Axis, string> = {
-  z: 'Uprights run full height',
-  x: 'Width rails run full width',
-  y: 'Depth rails run full depth',
-}
 
 const SCREW_LENGTHS = [8, 10, 12, 14, 16, 20]
 

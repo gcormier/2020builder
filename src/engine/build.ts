@@ -43,6 +43,7 @@ export function buildFrame(design: Design): Build {
     exterior: ext,
     interior,
     members: [],
+    panels: [],
     nodes: [],
     joints: [],
     groups: [],

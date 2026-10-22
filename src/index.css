@@ -260,6 +260,18 @@ main {
   color: #fff;
 }
 
+.toolbar button.primary {
+  background: #f0f2f5;
+  border-color: #f0f2f5;
+  color: #15171a;
+  font-weight: 600;
+}
+
+.toolbar button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .toolbar .sep {
   width: 8px;
 }

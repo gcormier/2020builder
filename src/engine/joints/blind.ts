@@ -131,6 +131,7 @@ export const blindJoint: JointMethod = {
               dir: face(B, sB === 0 ? 1 : 0),
             },
           ],
+          connectors: [],
         })
       }
     }
@@ -216,7 +217,7 @@ export const blindJoint: JointMethod = {
       `Build the ${sideName(B, 0)} frame: slide the screw heads of two ${plural(A)} (${labelsFor(frame, A)}) into the slot ends of two ${plural(O)} (${labelsFor(frame, O)}), flush with the ends. Snug them through the wrench holes — don't fully tighten yet.`,
       `Build the ${sideName(B, 1)} frame the same way.`,
       `Join the two frames with the four ${plural(B)} (${labelsFor(frame, B)}): slide their screw heads into the remaining slot ends of the ${plural(O)} and snug.`,
-      'Square the frame: on each face, measure the corner-to-corner diagonals and nudge until they match within ~${fmt(1)} (targets in the diagonal table). Then fully tighten every screw through its wrench hole and re-check.',
+      `Square the frame: on each face, measure the corner-to-corner diagonals and nudge until they match within ~${fmt(1)} (targets in the diagonal table). Then fully tighten every screw through its wrench hole and re-check.`,
     ]
   },
 }

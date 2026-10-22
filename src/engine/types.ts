@@ -120,6 +120,13 @@ export interface Fastener {
   dir: FaceDir
 }
 
+/** Bracket / corner cube / connector body, as boxes for rendering. */
+export interface Connector {
+  kind: string
+  color: string
+  boxes: { min: Vec3; max: Vec3 }[]
+}
+
 export interface Joint {
   id: string
   nodeId: string
@@ -129,6 +136,7 @@ export interface Joint {
   buttingEnd: Side
   method: JointMethodId
   fasteners: Fastener[]
+  connectors: Connector[]
 }
 
 export interface HardwareLine {
@@ -180,12 +188,34 @@ export interface Diagonal {
   length: number
 }
 
+/** One sheet panel sitting in the slots of a frame face. */
+export interface Panel {
+  id: string
+  /** Frame face, e.g. 'front'. */
+  face: string
+  /** Panel cut-list group label (P1, P2…). */
+  group: string
+  /** Sheet cut size (in-plane) and thickness. */
+  width: number
+  height: number
+  thickness: number
+  material: string
+  /** Placement for rendering. */
+  min: Vec3
+  max: Vec3
+  color: string
+  opacity: number
+  /** Corner notch needed to clear joint hardware (0 = none). */
+  cornerNotch: number
+}
+
 export interface Build {
   design: Design
   profile: Profile
   exterior: { w: number; d: number; h: number }
   interior: { w: number; d: number; h: number }
   members: Member[]
+  panels: Panel[]
   nodes: FrameNode[]
   joints: Joint[]
   groups: CutGroup[]
