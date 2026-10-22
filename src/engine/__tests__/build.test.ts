@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { buildFrame } from '../build'
 import { defaultDesign } from '../defaults'
+import { recommendedBlindOptions } from '../joints/blind'
 import { nestCuts } from '../nesting'
+import { getProfile } from '../profiles'
 import { formatLength, fromDisplay } from '../units'
 import type { Axis, Build, CutGroup, Design } from '../types'
 
@@ -209,5 +211,36 @@ describe('units', () => {
     expect(formatLength(460, 'mm')).toBe('460 mm')
     expect(formatLength(25.4, 'in')).toBe('1.000″')
     expect(fromDisplay(2, 'in')).toBeCloseTo(50.8)
+  })
+})
+
+describe('M6 profile (IXGNIJ, Ø5 bore)', () => {
+  const m6 = (blind: Partial<Design['jointOptions']['blind']> = {}): Design => {
+    const d = design({ profileId: '2020-ixgnij-m6' })
+    d.jointOptions = { blind: { ...recommendedBlindOptions(getProfile('2020-ixgnij-m6')), ...blind } }
+    return d
+  }
+
+  it('recommends M6×12 BHCS, Ø6 wrench hole, 14 deep tap', () => {
+    expect(recommendedBlindOptions(getProfile('2020-ixgnij-m6'))).toEqual({
+      headType: 'BHCS', screwLength: 12, wrenchHoleDiameter: 6, tapDepth: 14,
+    })
+  })
+
+  it('builds with M6 hardware and no warnings', () => {
+    const b = buildFrame(m6())
+    expect(b.warnings).toEqual([])
+    expect(b.hardware).toEqual([expect.objectContaining({ key: 'M6x12-BHCS', qty: 16, description: 'M6×12 button head (BHCS)' })])
+    const tapped = b.members.find((m) => m.axis === 'x')!
+    expect(tapped.ends[0]).toEqual({ thread: 'M6×1', drill: 5, depth: 14 })
+    expect(b.joints[0].fasteners[0]).toMatchObject({ size: 'M6', diameter: 6, headDiameter: 10.5, headHeight: 3.3 })
+    expect(b.tools.join(' ')).toMatch(/4 mm hex key/)
+    expect(b.steps.join(' ')).toMatch(/M6×12 BHCS/)
+    expect(b.steps.join(' ')).not.toMatch(/M5/)
+  })
+
+  it('warns that M6×10 is too short and M6 SHCS will not fit', () => {
+    expect(buildFrame(m6({ screwLength: 10 })).warnings.join(' ')).toMatch(/engagement/)
+    expect(buildFrame(m6({ headType: 'SHCS' })).warnings.join(' ')).toMatch(/won't slide in/)
   })
 })

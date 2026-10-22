@@ -22,6 +22,10 @@ export interface Profile {
   slotDepth: number
   /** Width of the cavity behind the lips. */
   slotCavityWidth: number
+  /** Diagonal web (core corner → outer corner) thickness; sets the cavity walls. Omit for a generic look. */
+  webThickness?: number
+  /** Relief at the slot mouth: wider than slotOpening for a short depth. Cosmetic. */
+  slotMouth?: { width: number; depth: number }
   /** Centre bore diameter (already tap-drill size on most 2020). */
   centerBore: number
   endTap: { thread: string; drill: number; nominal: number }
@@ -105,6 +109,8 @@ export interface FrameNode {
 export interface Fastener {
   kind: 'BHCS' | 'SHCS'
   size: string
+  /** Nominal thread diameter. */
+  diameter: number
   length: number
   headDiameter: number
   headHeight: number

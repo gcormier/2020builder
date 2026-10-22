@@ -148,7 +148,7 @@ function Screw({ f }: { f: Fastener }) {
         <meshStandardMaterial color="#c9ccd1" metalness={0.8} roughness={0.3} />
       </mesh>
       <mesh position={shank} rotation={CYL_ROT[axis]}>
-        <cylinderGeometry args={[2.5, 2.5, f.length, 16]} />
+        <cylinderGeometry args={[f.diameter / 2, f.diameter / 2, f.length, 16]} />
         <meshStandardMaterial color="#9da2a8" metalness={0.8} roughness={0.35} />
       </mesh>
     </group>
@@ -163,10 +163,9 @@ function ViewController({ view, fitKey }: { view: Props['view']; fitKey: string 
   useEffect(() => {
     const { center, distance } = bounds.refresh().getSize()
     const d = new THREE.Vector3(...VIEW_DIRS[view.name]).normalize().multiplyScalar(distance)
-    bounds
-      .moveTo(center.clone().add(d))
-      .lookAt({ target: center, up: [0, 0, 1] })
-      .fit()
+    // No .fit(): on perspective cameras drei's fit() is reset(), which keeps the
+    // current direction and would undo moveTo. `distance` is already the fit distance.
+    bounds.moveTo(center.clone().add(d)).lookAt({ target: center, up: [0, 0, 1] })
     // view.n re-triggers the same named view.
   }, [bounds, view.name, view.n])
   return null

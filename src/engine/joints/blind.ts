@@ -1,15 +1,35 @@
 import { dimOf } from '../frame'
 import type { Frame } from '../frameContext'
 import { MEMBER_NAMES, axisIndex, face, others, sideName } from '../geometry'
-import type { Axis, CutGroup, Joint, MemberOp, Side, Vec3 } from '../types'
+import type { Axis, BlindJointOptions, CutGroup, Joint, MemberOp, Profile, Side, Vec3 } from '../types'
 import { formatLength } from '../units'
 import type { JointMethod, JointResult } from './types'
 
-// M5 head geometry (ISO 7380 button head / ISO 4762 socket head).
-const HEADS = {
-  BHCS: { diameter: 9.5, height: 2.75, hexKey: 3, label: 'button head (BHCS)' },
-  SHCS: { diameter: 8.5, height: 5.0, hexKey: 4, label: 'socket head (SHCS)' },
-} as const
+type HeadSpec = { diameter: number; height: number; hexKey: number }
+
+// Head geometry by nominal thread: ISO 7380 button head / ISO 4762 socket head.
+const HEADS: Record<number, Record<BlindJointOptions['headType'], HeadSpec>> = {
+  5: { BHCS: { diameter: 9.5, height: 2.75, hexKey: 3 }, SHCS: { diameter: 8.5, height: 5.0, hexKey: 4 } },
+  6: { BHCS: { diameter: 10.5, height: 3.3, hexKey: 4 }, SHCS: { diameter: 10.0, height: 6.0, hexKey: 5 } },
+}
+
+const HEAD_LABELS: Record<BlindJointOptions['headType'], string> = {
+  BHCS: 'button head (BHCS)',
+  SHCS: 'socket head (SHCS)',
+}
+
+/** Sensible starting options for a profile's end-tap thread. */
+export function recommendedBlindOptions(profile: Profile): BlindJointOptions {
+  return profile.endTap.nominal >= 6
+    ? { headType: 'BHCS', screwLength: 12, wrenchHoleDiameter: 6, tapDepth: 14 }
+    : { headType: 'BHCS', screwLength: 10, wrenchHoleDiameter: 5, tapDepth: 12 }
+}
+
+function headOf(profile: Profile, type: BlindJointOptions['headType']): HeadSpec {
+  const table = HEADS[profile.endTap.nominal]
+  if (!table) throw new Error(`no head data for M${profile.endTap.nominal}`)
+  return table[type]
+}
 
 /** Shank left exposed under the head: lip thickness plus a little slide clearance. */
 function standoffOf(lip: number): number {
@@ -38,14 +58,15 @@ export const blindJoint: JointMethod = {
   id: 'blind',
   name: 'Blind joint (end tap + wrench hole)',
   description:
-    'Butting member is tapped M5 at the end; a screw head rides in the owner\'s slot and is tightened with a hex key through a wrench hole drilled from the outside face. No brackets, nothing protrudes.',
+    'Butting member is tapped at the end (M5 or M6, per profile); a screw head rides in the owner\'s slot and is tightened with a hex key through a wrench hole drilled from the outside face. No brackets, nothing protrudes.',
   ownership: 'owner',
 
   apply(frame: Frame): JointResult {
     const { profile, ext } = frame
     const opts = frame.design.jointOptions.blind
     const P = profile.size
-    const head = HEADS[opts.headType]
+    const head = headOf(profile, opts.headType)
+    const size = `M${profile.endTap.nominal}`
     const lip = profile.slotLipThickness
     const joints: Joint[] = []
     const ops: MemberOp[] = []
@@ -101,7 +122,8 @@ export const blindJoint: JointMethod = {
           fasteners: [
             {
               kind: opts.headType,
-              size: 'M5',
+              size,
+              diameter: profile.endTap.nominal,
               length: opts.screwLength,
               headDiameter: head.diameter,
               headHeight: head.height,
@@ -120,7 +142,7 @@ export const blindJoint: JointMethod = {
     const d = profile.endTap.nominal
     if (engagement < 1.5 * d)
       warnings.push(
-        `Thread engagement is only ${fmt(engagement)} (M5×${opts.screwLength} minus ${fmt(standoff)} stand-off). Aim for ≥ ${fmt(1.5 * d)} in aluminium — use a longer screw.`,
+        `Thread engagement is only ${fmt(engagement)} (${size}×${opts.screwLength} minus ${fmt(standoff)} stand-off). Aim for ≥ ${fmt(1.5 * d)} in aluminium — use a longer screw.`,
       )
     if (opts.tapDepth < engagement + 1)
       warnings.push(
@@ -133,6 +155,8 @@ export const blindJoint: JointMethod = {
       )
     if (head.diameter > profile.slotCavityWidth)
       warnings.push(`${opts.headType} head (Ø${fmt(head.diameter)}) is wider than the slot cavity (${fmt(profile.slotCavityWidth)}).`)
+    if (profile.endTap.nominal > profile.slotOpening)
+      warnings.push(`${size} shank is wider than the ${fmt(profile.slotOpening)} slot opening — the screw can't pass the lips.`)
     if (opts.wrenchHoleDiameter < head.hexKey + 1)
       warnings.push(`Wrench hole Ø${opts.wrenchHoleDiameter} is tight for a ${head.hexKey} mm hex key — use ≥ Ø${head.hexKey + 1}.`)
     if (opts.wrenchHoleDiameter > profile.slotOpening)
@@ -155,9 +179,9 @@ export const blindJoint: JointMethod = {
       ops,
       hardware: [
         {
-          key: `M5x${opts.screwLength}-${opts.headType}`,
+          key: `${size}x${opts.screwLength}-${opts.headType}`,
           category: 'fastener',
-          description: `M5×${opts.screwLength} ${head.label}`,
+          description: `${size}×${opts.screwLength} ${HEAD_LABELS[opts.headType]}`,
           qty: joints.length,
         },
       ],
@@ -188,7 +212,7 @@ export const blindJoint: JointMethod = {
       `Cut all ${total} members to length (see cut list). Cut each group in one batch against a stop block so matching parts are identical, then deburr and check every end is square.`,
       `Tap both ends of every member in ${list(tapped.map((g) => g.label))} — ${tapCount} ends — ${profile.endTap.thread}, ${fmt(opts.tapDepth)} deep. ${boreNote}`,
       `Drill wrench holes in ${list(drilled.map((g) => g.label))}: at each end, centre-punch the middle of the slot ${fmt(P / 2)} from the end on both outer faces (faces 1 and 2, adjacent), then drill Ø${opts.wrenchHoleDiameter} mm through the slot floor and core until you break into the opposite slot. ${holeCount} holes. Drill both ends on the same two faces.`,
-      `Thread an M5×${opts.screwLength} ${opts.headType} into every tapped end, leaving about ${fmt(standoffOf(profile.slotLipThickness))} of shank between the head and the end of the extrusion.`,
+      `Thread an M${profile.endTap.nominal}×${opts.screwLength} ${opts.headType} into every tapped end, leaving about ${fmt(standoffOf(profile.slotLipThickness))} of shank between the head and the end of the extrusion.`,
       `Build the ${sideName(B, 0)} frame: slide the screw heads of two ${plural(A)} (${labelsFor(frame, A)}) into the slot ends of two ${plural(O)} (${labelsFor(frame, O)}), flush with the ends. Snug them through the wrench holes — don't fully tighten yet.`,
       `Build the ${sideName(B, 1)} frame the same way.`,
       `Join the two frames with the four ${plural(B)} (${labelsFor(frame, B)}): slide their screw heads into the remaining slot ends of the ${plural(O)} and snug.`,

@@ -3,6 +3,7 @@ import {
   PROFILES,
   formatLength,
   getProfile,
+  recommendedBlindOptions,
   type Axis,
   type BlindJointOptions,
   type Build,
@@ -62,7 +63,8 @@ export function InputPanel({ design, build, update }: Props) {
   const u = design.units
   const s = design.sizing
   const blind = design.jointOptions.blind
-  const P = getProfile(design.profileId).size
+  const profile = getProfile(design.profileId)
+  const P = profile.size
   const setSizing = (patch: Partial<Sizing>) => update((d) => ({ ...d, sizing: { ...d.sizing, ...patch } as Sizing }))
   const setBlind = (patch: Partial<BlindJointOptions>) =>
     update((d) => ({ ...d, jointOptions: { ...d.jointOptions, blind: { ...d.jointOptions.blind, ...patch } } }))
@@ -127,13 +129,30 @@ export function InputPanel({ design, build, update }: Props) {
 
       <section>
         <h2>Profile</h2>
-        <select value={design.profileId} onChange={(e) => update((d) => ({ ...d, profileId: e.target.value }))}>
+        <select
+          value={design.profileId}
+          onChange={(e) => {
+            const next = getProfile(e.target.value)
+            update((d) => {
+              // A different end-tap thread invalidates screw / hole / tap choices.
+              const sameThread = getProfile(d.profileId).endTap.nominal === next.endTap.nominal
+              return {
+                ...d,
+                profileId: next.id,
+                jointOptions: sameThread ? d.jointOptions : { ...d.jointOptions, blind: recommendedBlindOptions(next) },
+              }
+            })
+          }}
+        >
           {PROFILES.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
+        <p className="hint">
+          End tap {profile.endTap.thread} into Ø{profile.centerBore} mm bore · slot {profile.slotOpening} mm. {profile.notes}
+        </p>
       </section>
 
       <section>
@@ -176,7 +195,7 @@ export function InputPanel({ design, build, update }: Props) {
               <select value={blind.screwLength} onChange={(e) => setBlind({ screwLength: Number(e.target.value) })}>
                 {SCREW_LENGTHS.map((l) => (
                   <option key={l} value={l}>
-                    M5×{l}
+                    M{profile.endTap.nominal}×{l}
                   </option>
                 ))}
               </select>

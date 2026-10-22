@@ -7,3 +7,4 @@ export const JOINT_METHODS: Record<JointMethodId, JointMethod> = {
 }
 
 export type { JointMethod, JointResult } from './types'
+export { recommendedBlindOptions } from './blind'

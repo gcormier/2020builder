@@ -449,3 +449,7 @@ tr.hot td {
     grid-template-columns: 1fr;
   }
 }
+
+.panel select + .hint {
+  margin-top: 6px;
+}
