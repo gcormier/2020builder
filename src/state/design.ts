@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { defaultDesign, type Design } from '../engine'
+import { JOINT_METHODS, defaultDesign, recommendedJointOptions, getProfile, type Design } from '../engine'
 
 const STORAGE_KEY = '2020builder.design'
 const HASH_PREFIX = '#d='
@@ -26,11 +26,20 @@ export function decodeDesign(json: string): Design | null {
     const p = JSON.parse(json) as Partial<Design>
     if (p.version !== 1) return null
     const def = defaultDesign()
+    // Fill options for methods added since the design was saved, matched to its profile's thread.
+    const rec = recommendedJointOptions(getProfile(p.profileId ?? def.profileId))
+    const jo = p.jointOptions
     return {
       ...def,
       ...p,
+      jointMethod: p.jointMethod && p.jointMethod in JOINT_METHODS ? p.jointMethod : def.jointMethod,
       sizing: p.sizing ?? def.sizing,
-      jointOptions: { blind: { ...def.jointOptions.blind, ...p.jointOptions?.blind } },
+      jointOptions: {
+        blind: { ...rec.blind, ...jo?.blind },
+        bracket: { ...rec.bracket, ...jo?.bracket },
+        through: { ...rec.through, ...jo?.through },
+        cube: { ...rec.cube, ...jo?.cube },
+      },
       stock: { ...def.stock, ...p.stock },
     }
   } catch {

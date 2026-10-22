@@ -1,4 +1,4 @@
-import { recommendedBlindOptions } from './joints/blind'
+import { recommendedJointOptions } from './joints/recommend'
 import { getProfile } from './profiles'
 import type { Design } from './types'
 
@@ -12,9 +12,7 @@ export function defaultDesign(): Design {
     profileId,
     cornerOwner: 'z',
     jointMethod: 'blind',
-    jointOptions: {
-      blind: recommendedBlindOptions(getProfile(profileId)),
-    },
+    jointOptions: recommendedJointOptions(getProfile(profileId)),
     stock: { length: 1000, kerf: 2.5, trim: 5 },
   }
 }

@@ -1,6 +1,6 @@
 export * from './types'
 export { buildFrame } from './build'
 export { PROFILES, getProfile } from './profiles'
-export { JOINT_METHODS, recommendedBlindOptions } from './joints'
+export { JOINT_METHODS, SCREW_LENGTHS, recommendedBlindOptions, recommendedJointOptions } from './joints'
 export * from './units'
 export { defaultDesign } from './defaults'

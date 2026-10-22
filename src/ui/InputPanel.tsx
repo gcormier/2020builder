@@ -3,14 +3,14 @@ import {
   PROFILES,
   formatLength,
   getProfile,
-  recommendedBlindOptions,
+  recommendedJointOptions,
   type Axis,
-  type BlindJointOptions,
   type Build,
   type Design,
   type Sizing,
   type Units,
 } from '../engine'
+import { JointOptionsPanel } from './JointOptionsPanel'
 import { OWNER_LABELS } from './labels'
 import { NumberField } from './NumberField'
 
@@ -20,8 +20,6 @@ interface Props {
   update: (fn: (d: Design) => Design) => void
 }
 
-
-const SCREW_LENGTHS = [8, 10, 12, 14, 16, 20]
 
 function Segmented<T extends string>({
   value,
@@ -58,12 +56,9 @@ function convertSizing(s: Sizing, mode: Sizing['mode'], P: number): Sizing {
 export function InputPanel({ design, build, update }: Props) {
   const u = design.units
   const s = design.sizing
-  const blind = design.jointOptions.blind
   const profile = getProfile(design.profileId)
   const P = profile.size
   const setSizing = (patch: Partial<Sizing>) => update((d) => ({ ...d, sizing: { ...d.sizing, ...patch } as Sizing }))
-  const setBlind = (patch: Partial<BlindJointOptions>) =>
-    update((d) => ({ ...d, jointOptions: { ...d.jointOptions, blind: { ...d.jointOptions.blind, ...patch } } }))
   const setStock = (patch: Partial<Design['stock']>) => update((d) => ({ ...d, stock: { ...d.stock, ...patch } }))
   const fmt = (mm: number) => formatLength(mm, u)
 
@@ -135,7 +130,8 @@ export function InputPanel({ design, build, update }: Props) {
               return {
                 ...d,
                 profileId: next.id,
-                jointOptions: sameThread ? d.jointOptions : { ...d.jointOptions, blind: recommendedBlindOptions(next) },
+                // Bracket screws go into T-nuts, so they don't depend on the end tap.
+                jointOptions: sameThread ? d.jointOptions : { ...recommendedJointOptions(next), bracket: d.jointOptions.bracket },
               }
             })
           }}
@@ -167,45 +163,19 @@ export function InputPanel({ design, build, update }: Props) {
           </select>
         </label>
         <p className="hint">{JOINT_METHODS[design.jointMethod].description}</p>
-        <label className="field">
-          <span>Corner ownership</span>
-          <select value={design.cornerOwner} onChange={(e) => update((d) => ({ ...d, cornerOwner: e.target.value as Axis }))}>
-            {(Object.keys(OWNER_LABELS) as Axis[]).map((a) => (
-              <option key={a} value={a}>
-                {OWNER_LABELS[a]}
-              </option>
-            ))}
-          </select>
-        </label>
-        {design.jointMethod === 'blind' && (
-          <div className="grid2">
-            <label className="field">
-              <span>Screw head</span>
-              <select value={blind.headType} onChange={(e) => setBlind({ headType: e.target.value as BlindJointOptions['headType'] })}>
-                <option value="BHCS">BHCS (button)</option>
-                <option value="SHCS">SHCS (socket)</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Screw</span>
-              <select value={blind.screwLength} onChange={(e) => setBlind({ screwLength: Number(e.target.value) })}>
-                {SCREW_LENGTHS.map((l) => (
-                  <option key={l} value={l}>
-                    M{profile.endTap.nominal}×{l}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <NumberField label="Tap depth" value={blind.tapDepth} units={u} onChange={(tapDepth) => setBlind({ tapDepth })} />
-            <NumberField
-              label="Wrench hole drill"
-              value={blind.wrenchHoleDiameter}
-              suffix="mm"
-              step={0.5}
-              onChange={(wrenchHoleDiameter) => setBlind({ wrenchHoleDiameter })}
-            />
-          </div>
+        {JOINT_METHODS[design.jointMethod].ownership === 'owner' && (
+          <label className="field">
+            <span>Corner ownership</span>
+            <select value={design.cornerOwner} onChange={(e) => update((d) => ({ ...d, cornerOwner: e.target.value as Axis }))}>
+              {(Object.keys(OWNER_LABELS) as Axis[]).map((a) => (
+                <option key={a} value={a}>
+                  {OWNER_LABELS[a]}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
+        <JointOptionsPanel design={design} update={update} />
       </section>
 
       <section>

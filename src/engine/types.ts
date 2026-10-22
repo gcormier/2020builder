@@ -37,14 +37,48 @@ export type Sizing =
   | { mode: 'exterior'; w: number; d: number; h: number }
   | { mode: 'interior'; w: number; d: number; h: number; clearance: number }
 
+export type HeadType = 'BHCS' | 'SHCS'
+
 export interface BlindJointOptions {
-  headType: 'BHCS' | 'SHCS'
+  headType: HeadType
   screwLength: number
   wrenchHoleDiameter: number
   tapDepth: number
 }
 
-export type JointMethodId = 'blind'
+export interface BracketOptions {
+  /** Bracket screws thread into T-nuts, so their size is independent of the profile's end tap. */
+  screwSize: 4 | 5 | 6
+  screwLength: number
+  headType: HeadType
+  /** Drop-in nuts go in any time; slide-in nuts must be preloaded before slots are closed. */
+  tnut: 'drop-in' | 'slide-in'
+  bracketThickness: number
+}
+
+export interface ThroughBoltOptions {
+  headType: HeadType
+  screwLength: number
+  tapDepth: number
+  clearanceHole: number
+}
+
+export interface CubeOptions {
+  headType: HeadType
+  screwLength: number
+  tapDepth: number
+  /** Cube material between the counterbore floor (head seat) and the face against the extrusion. */
+  wall: number
+}
+
+export type JointMethodId = 'blind' | 'bracket' | 'through' | 'cube' | 'hidden'
+
+export interface JointOptions {
+  blind: BlindJointOptions
+  bracket: BracketOptions
+  through: ThroughBoltOptions
+  cube: CubeOptions
+}
 
 export interface StockOptions {
   length: number
@@ -62,7 +96,7 @@ export interface Design {
   /** Which axis's members run full length through the corners. */
   cornerOwner: Axis
   jointMethod: JointMethodId
-  jointOptions: { blind: BlindJointOptions }
+  jointOptions: JointOptions
   stock: StockOptions
 }
 
@@ -107,7 +141,7 @@ export interface FrameNode {
 }
 
 export interface Fastener {
-  kind: 'BHCS' | 'SHCS'
+  kind: HeadType
   size: string
   /** Nominal thread diameter. */
   diameter: number
@@ -222,6 +256,8 @@ export interface Build {
   hardware: HardwareLine[]
   tools: string[]
   steps: string[]
+  /** Informational, not problems (e.g. hardware that intrudes or protrudes). */
+  notes: string[]
   diagonals: Diagonal[]
   nesting: Nesting
   warnings: string[]

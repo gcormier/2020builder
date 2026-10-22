@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildFrame } from '../build'
 import { defaultDesign } from '../defaults'
 import { recommendedBlindOptions } from '../joints/blind'
+import { recommendedJointOptions } from '../joints/recommend'
 import { nestCuts } from '../nesting'
 import { getProfile } from '../profiles'
 import { formatLength, fromDisplay } from '../units'
@@ -13,7 +14,7 @@ function design(patch: Partial<Design> = {}): Design {
   return {
     ...defaultDesign(),
     profileId: m5.id,
-    jointOptions: { blind: recommendedBlindOptions(m5) },
+    jointOptions: recommendedJointOptions(m5),
     ...patch,
   }
 }
@@ -150,13 +151,13 @@ describe('blind joint', () => {
 
   it('warns when an SHCS head will not fit the slot', () => {
     const d = design()
-    d.jointOptions = { blind: { ...d.jointOptions.blind, headType: 'SHCS' } }
+    d.jointOptions = { ...d.jointOptions, blind: { ...d.jointOptions.blind, headType: 'SHCS' } }
     expect(buildFrame(d).warnings.join(' ')).toMatch(/won't slide in/)
   })
 
   it('warns on short thread engagement', () => {
     const d = design()
-    d.jointOptions = { blind: { ...d.jointOptions.blind, screwLength: 8 } }
+    d.jointOptions = { ...d.jointOptions, blind: { ...d.jointOptions.blind, screwLength: 8 } }
     expect(buildFrame(d).warnings.join(' ')).toMatch(/engagement/)
   })
 
@@ -236,7 +237,7 @@ describe('units', () => {
 describe('M6 profile (IXGNIJ, Ø5 bore)', () => {
   const m6 = (blind: Partial<Design['jointOptions']['blind']> = {}): Design => {
     const d = design({ profileId: '2020-ixgnij-m6' })
-    d.jointOptions = { blind: { ...recommendedBlindOptions(getProfile('2020-ixgnij-m6')), ...blind } }
+    d.jointOptions = { ...d.jointOptions, blind: { ...recommendedBlindOptions(getProfile('2020-ixgnij-m6')), ...blind } }
     return d
   }
 

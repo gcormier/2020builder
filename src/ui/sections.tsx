@@ -22,6 +22,13 @@ export function Messages({ build }: { build: Build }) {
           ))}
         </ul>
       )}
+      {build.notes.length > 0 && (
+        <ul className="msgs info">
+          {build.notes.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      )}
       {build.warnings.length > 0 && (
         <ul className="msgs warn">
           {build.warnings.map((w) => (

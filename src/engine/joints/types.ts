@@ -7,6 +7,7 @@ export interface JointResult {
   hardware: HardwareLine[]
   tools: string[]
   warnings: string[]
+  notes: string[]
 }
 
 export interface JointMethod {

@@ -316,6 +316,11 @@ main {
   color: var(--warn);
 }
 
+.msgs.info {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
 .msgs.error {
   background: var(--err-bg);
   color: var(--err);
