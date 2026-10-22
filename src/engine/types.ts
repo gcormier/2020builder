@@ -87,6 +87,18 @@ export interface StockOptions {
   trim: number
 }
 
+export type FaceName = 'front' | 'back' | 'left' | 'right' | 'top' | 'bottom'
+
+export type PanelMaterial = 'acrylic' | 'abs' | 'polycarbonate' | 'acm' | 'wood'
+
+export interface PanelOptions {
+  faces: FaceName[]
+  thickness: number
+  material: PanelMaterial
+  /** Gap left at each edge between the panel and the slot floor. */
+  clearance: number
+}
+
 export interface Design {
   version: 1
   name: string
@@ -98,6 +110,7 @@ export interface Design {
   jointMethod: JointMethodId
   jointOptions: JointOptions
   stock: StockOptions
+  panels: PanelOptions
 }
 
 export interface TapPrep {
@@ -225,21 +238,31 @@ export interface Diagonal {
 /** One sheet panel sitting in the slots of a frame face. */
 export interface Panel {
   id: string
-  /** Frame face, e.g. 'front'. */
-  face: string
+  face: FaceName
   /** Panel cut-list group label (P1, P2…). */
   group: string
   /** Sheet cut size (in-plane) and thickness. */
   width: number
   height: number
   thickness: number
-  material: string
+  material: PanelMaterial
   /** Placement for rendering. */
   min: Vec3
   max: Vec3
   color: string
   opacity: number
   /** Corner notch needed to clear joint hardware (0 = none). */
+  cornerNotch: number
+}
+
+export interface PanelGroup {
+  label: string
+  width: number
+  height: number
+  thickness: number
+  material: PanelMaterial
+  qty: number
+  faces: FaceName[]
   cornerNotch: number
 }
 
@@ -250,6 +273,7 @@ export interface Build {
   interior: { w: number; d: number; h: number }
   members: Member[]
   panels: Panel[]
+  panelGroups: PanelGroup[]
   nodes: FrameNode[]
   joints: Joint[]
   groups: CutGroup[]

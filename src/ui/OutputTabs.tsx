@@ -5,6 +5,7 @@ import {
   DiagonalTable,
   HardwareTable,
   Messages,
+  PanelTable,
   StepsList,
   StockBars,
   StockSummary,
@@ -36,7 +37,17 @@ export function OutputTabs({ build, hover, setHover }: Props) {
       </nav>
 
       <div className="tab-body">
-        {tab === 'Cut list' && <CutListTable build={build} hover={hover} setHover={setHover} />}
+        {tab === 'Cut list' && (
+          <>
+            <CutListTable build={build} hover={hover} setHover={setHover} />
+            {build.panelGroups.length > 0 && (
+              <>
+                <h3 className="sub">Panels</h3>
+                <PanelTable build={build} />
+              </>
+            )}
+          </>
+        )}
 
         {tab === 'Hardware & tools' && (
           <div className="cols">

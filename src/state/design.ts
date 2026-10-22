@@ -41,6 +41,7 @@ export function decodeDesign(json: string): Design | null {
         cube: { ...rec.cube, ...jo?.cube },
       },
       stock: { ...def.stock, ...p.stock },
+      panels: { ...def.panels, ...p.panels },
     }
   } catch {
     return null

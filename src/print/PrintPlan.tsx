@@ -7,6 +7,7 @@ import {
   DiagonalTable,
   HardwareTable,
   Messages,
+  PanelTable,
   StepsList,
   StockBars,
   StockSummary,
@@ -94,6 +95,12 @@ export function PrintPlan({ build, onBack }: { build: Build; onBack: () => void 
         <SheetHeader build={build} title="Cut list & materials" />
         <h2>Cut list</h2>
         <CutListTable build={build} />
+        {build.panelGroups.length > 0 && (
+          <>
+            <h2>Panels</h2>
+            <PanelTable build={build} />
+          </>
+        )}
         <h2>Stock layout</h2>
         <StockSummary build={build} />
         <StockBars build={build} />

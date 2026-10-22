@@ -3,9 +3,10 @@ import { makeFrame } from './frameContext'
 import { groupMembers } from './grouping'
 import { JOINT_METHODS } from './joints'
 import { nestCuts } from './nesting'
+import { computePanels } from './panels'
 import { getProfile } from './profiles'
 import { exteriorOf, interiorOf } from './sizing'
-import type { Build, Design, Diagonal } from './types'
+import type { Build, Design, Diagonal, PanelGroup } from './types'
 import { formatLength } from './units'
 
 function validate(design: Design, minExterior: number, ext: { w: number; d: number; h: number }): string[] {
@@ -30,6 +31,19 @@ function diagonals(w: number, d: number, h: number): Diagonal[] {
   return [diag('Front / back', w, h), diag('Left / right', d, h), diag('Top / bottom', w, d)]
 }
 
+/** Panels have to be in their slots before the members around them close — slot that in before assembly. */
+function withPanelStep(steps: string[], groups: PanelGroup[], design: Design): string[] {
+  if (!groups.length) return steps
+  const fmt = (mm: number) => formatLength(mm, design.units)
+  const list = groups
+    .map((g) => `${g.label} ${fmt(g.width)} × ${fmt(g.height)} ×${g.qty} (${g.faces.join(', ')})${g.cornerNotch ? `, ${fmt(g.cornerNotch)} corner notches` : ''}`)
+    .join('; ')
+  const step = `Cut the panels: ${list}. Each panel slides into the slots around its face, so it must be in place before the last member of that face is fixed — fit them as you build and join the frames.`
+  // Just before the first assembly step (after cutting/machining/prep).
+  const at = steps.findIndex((s) => /^Build the /.test(s))
+  return at < 0 ? [...steps, step] : [...steps.slice(0, at), step, ...steps.slice(at)]
+}
+
 export function buildFrame(design: Design): Build {
   const profile = getProfile(design.profileId)
   const P = profile.size
@@ -44,6 +58,7 @@ export function buildFrame(design: Design): Build {
     interior,
     members: [],
     panels: [],
+    panelGroups: [],
     nodes: [],
     joints: [],
     groups: [],
@@ -75,7 +90,8 @@ export function buildFrame(design: Design): Build {
 
   const groups = groupMembers(members)
   const nesting = nestCuts(groups, design.stock)
-  const warnings = [...result.warnings]
+  const panels = computePanels(design.panels, profile, ext, result.joints, design.units)
+  const warnings = [...result.warnings, ...panels.warnings]
   if (nesting.oversize.length)
     warnings.push(
       `${nesting.oversize.length} cut(s) are longer than the usable stock (${formatLength(design.stock.length - design.stock.trim, design.units)}). Use longer stock.`,
@@ -84,13 +100,15 @@ export function buildFrame(design: Design): Build {
   return {
     ...empty,
     members,
+    panels: panels.panels,
+    panelGroups: panels.groups,
     nodes,
     joints: result.joints,
     groups,
     hardware: result.hardware,
     tools: result.tools,
-    steps: method.steps(frame, groups),
-    notes: result.notes,
+    steps: withPanelStep(method.steps(frame, groups), panels.groups, design),
+    notes: [...result.notes, ...panels.notes],
     diagonals: diagonals(ext.w, ext.d, ext.h),
     nesting,
     warnings,

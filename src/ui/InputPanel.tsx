@@ -4,7 +4,11 @@ import {
   formatLength,
   getProfile,
   recommendedJointOptions,
+  FACES,
+  MATERIALS,
   type Axis,
+  type FaceName,
+  type PanelMaterial,
   type Build,
   type Design,
   type Sizing,
@@ -60,6 +64,13 @@ export function InputPanel({ design, build, update }: Props) {
   const P = profile.size
   const setSizing = (patch: Partial<Sizing>) => update((d) => ({ ...d, sizing: { ...d.sizing, ...patch } as Sizing }))
   const setStock = (patch: Partial<Design['stock']>) => update((d) => ({ ...d, stock: { ...d.stock, ...patch } }))
+  const setPanels = (patch: Partial<Design['panels']>) => update((d) => ({ ...d, panels: { ...d.panels, ...patch } }))
+  const toggleFace = (f: FaceName) =>
+    update((d) => {
+      const on = d.panels.faces.includes(f)
+      const faces = on ? d.panels.faces.filter((x) => x !== f) : (Object.keys(FACES) as FaceName[]).filter((x) => x === f || d.panels.faces.includes(x))
+      return { ...d, panels: { ...d.panels, faces } }
+    })
   const fmt = (mm: number) => formatLength(mm, u)
 
   return (
@@ -176,6 +187,34 @@ export function InputPanel({ design, build, update }: Props) {
           </label>
         )}
         <JointOptionsPanel design={design} update={update} />
+      </section>
+
+      <section>
+        <h2>Panels</h2>
+        <div className="chips">
+          {(Object.keys(FACES) as FaceName[]).map((f) => (
+            <button key={f} className={design.panels.faces.includes(f) ? 'on' : ''} aria-pressed={design.panels.faces.includes(f)} onClick={() => toggleFace(f)}>
+              {f}
+            </button>
+          ))}
+        </div>
+        {design.panels.faces.length > 0 && (
+          <div className="grid3">
+            <label className="field">
+              <span>Material</span>
+              <select value={design.panels.material} onChange={(e) => setPanels({ material: e.target.value as PanelMaterial })}>
+                {(Object.keys(MATERIALS) as PanelMaterial[]).map((m) => (
+                  <option key={m} value={m}>
+                    {MATERIALS[m].name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <NumberField label="Thickness" value={design.panels.thickness} units={u} step={u === 'in' ? 0.01 : 0.5} onChange={(thickness) => setPanels({ thickness })} />
+            <NumberField label="Edge clearance" value={design.panels.clearance} units={u} step={u === 'in' ? 0.01 : 0.1} onChange={(clearance) => setPanels({ clearance })} />
+          </div>
+        )}
+        <p className="hint">Sheets slide into the slots: size = opening + 2 × slot depth ({fmt(profile.slotDepth)}) − 2 × clearance.</p>
       </section>
 
       <section>

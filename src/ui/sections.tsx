@@ -1,4 +1,4 @@
-import { formatLength, type Build } from '../engine'
+import { MATERIALS, formatLength, type Build } from '../engine'
 import { describeEnds, describeHoles } from './describe'
 
 // Output blocks shared by the on-screen tabs and the printed plan.
@@ -211,6 +211,56 @@ export function DiagonalTable({ build }: { build: Build }) {
           </tr>
         ))}
       </tbody>
+    </table>
+  )
+}
+
+export function PanelTable({ build }: { build: Build }) {
+  if (!build.panelGroups.length) return null
+  const fmt = (mm: number) => formatLength(mm, build.design.units)
+  const area = build.panelGroups.reduce((n, g) => n + g.qty * g.width * g.height, 0)
+  return (
+    <table className="panels-table">
+      <thead>
+        <tr>
+          <th>Panel</th>
+          <th className="num">Qty</th>
+          <th className="num">Size</th>
+          <th className="num">Thick</th>
+          <th>Material</th>
+          <th>Corner notch</th>
+          <th>Faces</th>
+        </tr>
+      </thead>
+      <tbody>
+        {build.panelGroups.map((g) => (
+          <tr key={g.label}>
+            <td>
+              <Swatch color={MATERIALS[g.material].color} /> <b>{g.label}</b>
+            </td>
+            <td className="num">{g.qty}</td>
+            <td className="num">
+              <b>
+                {fmt(g.width)} × {fmt(g.height)}
+              </b>
+            </td>
+            <td className="num">{fmt(g.thickness)}</td>
+            <td>{MATERIALS[g.material].name}</td>
+            <td>{g.cornerNotch ? `${fmt(g.cornerNotch)} square, all 4 corners` : '—'}</td>
+            <td className="muted">{g.faces.join(', ')}</td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td className="num">{build.panelGroups.reduce((n, g) => n + g.qty, 0)}</td>
+          <td className="num">
+            {build.design.units === 'mm' ? `${(area / 1e6).toFixed(2)} m²` : `${(area / 645.16 / 144).toFixed(2)} ft²`}
+          </td>
+          <td colSpan={4} />
+        </tr>
+      </tfoot>
     </table>
   )
 }
